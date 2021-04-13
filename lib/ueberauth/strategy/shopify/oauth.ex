@@ -29,6 +29,7 @@ defmodule Ueberauth.Strategy.Shopify.OAuth do
   """
   def new_client(opts \\ []) do
     configs = Application.get_env(:ueberauth, Ueberauth.Strategy.Shopify.OAuth)
+    json_library = Ueberauth.json_library()
 
     opts =
       @defaults
@@ -36,6 +37,7 @@ defmodule Ueberauth.Strategy.Shopify.OAuth do
       |> Keyword.merge(opts)
 
     OAuth2.Client.new(opts)
+    |> OAuth2.Client.put_serializer("application/json", json_library)
   end
 
   @doc """
