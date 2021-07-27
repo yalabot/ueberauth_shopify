@@ -91,6 +91,11 @@ defmodule Ueberauth.Strategy.Shopify do
     redirect!(conn, Ueberauth.Strategy.Shopify.OAuth.authorize_url!(params, opts))
   end
 
+  @doc false
+  def handle_request!(conn) do
+    set_errors!(conn, [error("missing_shop", "No shop received")])
+  end
+
   @doc """
   Handles the callback from Shopify. When there is a failure from Shopify the failure is included in the
   `ueberauth_failure` struct. Otherwise the information returned from Shopify is returned in the `Ueberauth.Auth` struct.
