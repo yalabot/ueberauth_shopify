@@ -102,14 +102,20 @@ defmodule Ueberauth.Strategy.Shopify do
   """
   def handle_callback!(%Plug.Conn{ params: %{ "code" => code, "shop" => shop } } = conn) do
     opts = [redirect_uri: callback_url(conn), site: "https://" <> shop]
-    %{token: token} = Ueberauth.Strategy.Shopify.OAuth.get_token!([
-      code: code,
-      client_secret: Ueberauth.Strategy.Shopify.OAuth.new_client().client_secret
-    ], opts)
-    if token.access_token == nil do
-      set_errors!(conn, [error(token.other_params["error"], token.other_params["error_description"])])
-    else
-      put_private(conn, :shopify_token, token)
+
+    try do
+      %{token: token} = Ueberauth.Strategy.Shopify.OAuth.get_token!([
+        code: code,
+        client_secret: Ueberauth.Strategy.Shopify.OAuth.new_client().client_secret
+      ], opts)
+      if token.access_token == nil do
+        set_errors!(conn, [error(token.other_params["error"], token.other_params["error_description"])])
+      else
+        put_private(conn, :shopify_token, token)
+      end
+    rescue
+      oauth_error in [OAuth2.Error] ->
+        set_errors!(conn, error("unknown", OAuth2.Error.message(oauth_error)))
     end
   end
 
